@@ -14,7 +14,7 @@ Some plotting function of the examples use the matlab_lib. Follow the instructio
 
 Simulation of a fixed wing UAV using artificial vector fields. A complex airplane model is considered and lower level PID controllers are considered.
 
-Open the file `simulink/fixed_wing/fixed_wing_sim.slx` on simulink to run the simulation.
+Open the file `simulink/fixed_wing/fixed_wing_sim.mdl` on simulink to run the simulation.
 
 Related Publication:
 
