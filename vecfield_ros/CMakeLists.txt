@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.0.2)
 project(vecfield_ros)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,6 +13,7 @@ project(vecfield_ros)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  roslib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -103,8 +107,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES vecfield_ros
-#  CATKIN_DEPENDS roscpp rospy
+#  LIBRARIES drone_simulator
+  CATKIN_DEPENDS roscpp rospy roslib
 #  DEPENDS system_lib
 )
 
@@ -117,6 +121,9 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  include
+  include/libs
+  include/vecfield_ros
 )
 
 ## Declare a C++ library
@@ -133,6 +140,37 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/vecfield_ros_node.cpp)
+
+
+
+add_executable(drone_sim src/drone_sim.cpp
+        src/drone_class.cpp
+        src/read_parameters.cpp
+        include/vecfield_ros/drone_class.h
+        src/acrorate_class.cpp
+        include/vecfield_ros/acrorate_class.h
+        src/distfield_class.cpp
+        include/vecfield_ros/distfield_class.h)
+target_link_libraries(drone_sim ${catkin_LIBRARIES} ${CMAKE_SOURCE_DIR}/include/libs/libyaml-cpp.a)
+
+# add_library(drone_class
+#   src/drone_class.cpp
+#   src/read_parameters.cpp
+#   include/vecfield_ros/drone_class.h
+# )
+
+# add_library(acrorate_class
+#   src/acrorate_class.cpp
+#   include/vecfield_ros/acrorate_class.h
+# )
+
+# add_library(distfield_class
+#   src/distfield_class.cpp
+#   include/vecfield_ros/distfield_class.h
+# )
+
+
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

@@ -1,0 +1,9 @@
+
+
+Drone_Dynamics:
+  # Drone mass
+  m: 0.4
+  # Gravity acceleration
+  g: 9.81
+  # Drag
+  drag: 0.0
