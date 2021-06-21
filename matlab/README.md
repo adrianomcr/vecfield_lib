@@ -7,7 +7,7 @@ Example vector field control codes for matlab
 
 ### Requirements
 
-Some plotting function of the examples use the matlab_lib. Follow the instruction in `https://github.com/adrianomcr/matlab_lib` to install it.
+Some plotting function of the examples use the matlab_lib. Follow the instruction in <https://github.com/adrianomcr/matlab_lib> to install it.
 
 
 
