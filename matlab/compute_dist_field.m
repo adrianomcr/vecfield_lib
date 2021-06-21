@@ -2,8 +2,18 @@ function f = compute_dist_field(p)
 
     global r cost Kf
 
+    s_min = 0;
+    D_min = cost(p,0);
+    sv = linspace(0,2*pi,20);
+    for k = 2:1:length(sv)
+        if(cost(p,sv(k)) < D_min)
+            s_min = sv(k);
+            D_min = cost(p,s_min);
+        end
+    end
+    
     %Compute the parametes of the closest point
-    s_star = fminbnd(@(s) cost(p,s),0,2*pi);
+    s_star = fminbnd(@(s) cost(p,s),s_min-pi/10,s_min+pi/10);
     %Compute the closest point on the curve
     p_star = r(s_star);
     

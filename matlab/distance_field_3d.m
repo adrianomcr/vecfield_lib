@@ -12,6 +12,7 @@ R = Rot('x',rand(1))*Rot('y',rand(1))*Rot('z',rand(1)); %matlab_lib
 %----- ---------------------------------------------------------------------- -----
 % r = @(s) [2*cos(s); 1*sin(s); 0*s]; %ellipse
 r = @(s) R*[(cos(s).^4+sin(s).^4).^(-0.25).*cos(s); (cos(s).^4+sin(s).^4).^(-0.25).*sin(s);0*s]; %square
+% r = @(s) R*[0.5*(sin(s)+2*sin(2*s)); 0.5*(cos(s)-2*cos(2*s)); 0.5*(-sin(3*s)+1)]; %knot
 % r = @(s) R*[2*cos(s); 1*sin(2*s)]; %8
 % r = @(s) R*[1*cos(s) + 1*cos(2*s); 1*sin(s)-1*sin(2*s)]; %trifoil
 % r = @(s) R*[4*sin(4*s); 3*cos(3*s)]/3; %fill square
