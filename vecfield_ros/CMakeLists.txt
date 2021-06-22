@@ -145,13 +145,28 @@ include_directories(
 
 add_executable(drone_sim src/drone_sim.cpp
         src/drone_class.cpp
-        src/read_parameters.cpp
         include/vecfield_ros/drone_class.h
         src/acrorate_class.cpp
         include/vecfield_ros/acrorate_class.h
         src/distfield_class.cpp
         include/vecfield_ros/distfield_class.h)
-target_link_libraries(drone_sim ${catkin_LIBRARIES} ${CMAKE_SOURCE_DIR}/include/libs/libyaml-cpp.a)
+target_link_libraries(drone_sim ${catkin_LIBRARIES} )
+
+
+add_executable(control_turtle src/control_turtle.cpp
+  include/vecfield_ros/distfield_class.h
+  src/distfield_class.cpp)
+target_link_libraries(control_turtle ${catkin_LIBRARIES})
+
+# add_executable(drone_sim src/drone_sim.cpp
+#         src/drone_class.cpp
+#         src/read_parameters.cpp
+#         include/vecfield_ros/drone_class.h
+#         src/acrorate_class.cpp
+#         include/vecfield_ros/acrorate_class.h
+#         src/distfield_class.cpp
+#         include/vecfield_ros/distfield_class.h)
+# target_link_libraries(drone_sim ${catkin_LIBRARIES} ${CMAKE_SOURCE_DIR}/include/libs/libyaml-cpp.a)
 
 # add_library(drone_class
 #   src/drone_class.cpp

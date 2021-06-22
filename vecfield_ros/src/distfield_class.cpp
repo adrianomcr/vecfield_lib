@@ -63,7 +63,7 @@ distfield_class::distfield_class(double time_step){
 
     //Parameters
     gain_Kf = 0.8; //conergence gain of the field
-    vr = 2.0; //reference velocity
+    vr = 1.5; //reference velocity
 
     dt = time_step;
 
@@ -76,8 +76,10 @@ Vector3d distfield_class::sample_curve(double s){
 
   Vector3d C;
 
-  // C << 3*cos(s), 2*sin(s), 1; //ellipse
-  C << 2*(sin(s)+2*sin(2*s)), 2*(cos(s)-2*cos(2*s)), 2*(-sin(3*s)+1) + 1; //knot
+  // C << 3*cos(s)+5, 2*sin(s)+5, 1; //ellipse
+  C << 3*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*cos(s)+5, 2*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*sin(s)+5, 1; //square
+  // C << 3*(1+cos(6*s)/6.0)*cos(s)+5, 2*(1+cos(6*s)/6.0)*sin(s)+5, 1; //amoeba 
+  // C << 2*(sin(s)+2*sin(2*s)), 2*(cos(s)-2*cos(2*s)), 2*(-sin(3*s)+1) + 1; //knot
   // C << 6*cos(s), 1.5*sin(2*s), 1; //8 - should not work properly for now
 
   return C;

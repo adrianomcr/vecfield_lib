@@ -107,12 +107,14 @@ int main(int argc, char *argv[]){
   std:string param_file = "/home/adrianomcr/ROS_projects/vecfield_ws/src/vecfield_lib/vecfield_ros/config/parameters.yaml";
   cout << "\33[33mCheck the path of the param file on drone_sim.cpp:\33[0m" << endl;
   cout << "\33[33m"<<param_file<<"""\33[0m" << endl;
-  parameters *Params;
-  Params = new parameters(param_file);
-  Eigen::VectorXd config_params;
+  // parameters *Params;
+  // Params = new parameters(param_file);
+  Eigen::VectorXd config_params(2);
   // Read Parameters
-  config_params = Params->get_parameters();
-
+  //config_params = Params->get_parameters();
+  cout << "a" << endl;
+  config_params << 0.4, 9.81;
+  cout << "b" << endl;
 
   cout << "\33[34m\nOpenning logs ...\33[0m" << endl;
   open_log_files();
@@ -219,7 +221,7 @@ int main(int argc, char *argv[]){
 
 #ifdef PRINT_EXECUTION_PERCENTAGE
     if((t/T)*100 > targ_percent){
-      cout << "\033[1A\r\33[92mExecussion: " << targ_percent << "%\33[0m" << endl;
+      cout << "\033[1A\r\33[92mExecution: " << targ_percent << "%\33[0m" << endl;
       targ_percent += step_percent;
     }
 #endif
