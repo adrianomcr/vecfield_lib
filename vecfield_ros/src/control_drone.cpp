@@ -41,6 +41,9 @@ using namespace std;
 
 #define N_STATES 13
 
+#define freq 100.0 //control loop frequency
+#define Ts 1.0/freq
+
 //Log files
 FILE *states_log;
 FILE *controls_log;
@@ -49,7 +52,7 @@ FILE *sensors_log;
 
 double time_log;
 
-
+Eigen::VectorXd drone_states(N_STATES);
 
 void open_log_files(){
 
@@ -97,9 +100,50 @@ void save_to_log(VectorXd x, VectorXd u, VectorXd acro, VectorXd sensors, double
 
 
 
+// Get drone states
+void cb_state(const nav_msgs::Odometry::ConstPtr &msg){
+
+
+drone_states(0) = msg->pose.pose.position.x;
+drone_states(1) = msg->pose.pose.position.y;
+drone_states(2) = msg->pose.pose.position.z;
+
+drone_states(3) = msg->twist.twist.linear.x;
+drone_states(4) = msg->twist.twist.linear.y;
+drone_states(5) = msg->twist.twist.linear.z;
+
+drone_states(6) = msg->pose.pose.orientation.w;
+drone_states(7) = msg->pose.pose.orientation.x;
+drone_states(8) = msg->pose.pose.orientation.y;
+drone_states(9) = msg->pose.pose.orientation.z;
+
+drone_states(10) = msg->twist.twist.angular.x;
+drone_states(11) = msg->twist.twist.angular.y;
+drone_states(12) = msg->twist.twist.angular.z;
+
+}
+
+
 
 
 int main(int argc, char *argv[]){
+
+
+
+
+  ros::init(argc, argv, "controller");
+  ros::NodeHandle nh;
+
+
+  ros::Subscriber states_sub = nh.subscribe<nav_msgs::Odometry>("/drone/gt", 1, cb_state);
+  cout << "\33[94mSubscribing to '/drone/gt'\33[0m" << endl;
+  ros::Publisher cmd_pub = nh.advertise<geometry_msgs::Quaternion>("drone/input/rateThrust", 1);
+  cout << "\33[94mPublishing at to 'drone/input/rateThrust'\33[0m" << endl;
+
+
+  ros::Rate loop_rate(freq);
+
+
 
   cout << "\33[32mMain started ...\33[0m" << endl;
 
@@ -112,9 +156,7 @@ int main(int argc, char *argv[]){
   Eigen::VectorXd config_params(2);
   // Read Parameters
   //config_params = Params->get_parameters();
-  cout << "a" << endl;
-  config_params << 0.4, 9.81;
-  cout << "b" << endl;
+  config_params << 0.52, 9.81;
 
   cout << "\33[34m\nOpenning logs ...\33[0m" << endl;
   open_log_files();
@@ -123,115 +165,75 @@ int main(int argc, char *argv[]){
   double time_step;
   time_step = TIME_STEP;
 
-  drone_class *Drone;
-  Drone = new drone_class(time_step, config_params);
+  // drone_class *Drone;
+  // Drone = new drone_class(time_step, config_params);
 
   double m = config_params(0);
   double g = config_params(1);
 
-  double tau_r = m*g;
-  double wx_r = 0.0;
-  double wy_r = 0.0;
-  double wz_r = 0.0;
+  // double tau_r = m*g;
+  // double wx_r = 0.0;
+  // double wy_r = 0.0;
+  // double wz_r = 0.0;
 
-  VectorXd omega_r(3);
-  omega_r << wx_r, wy_r, wz_r;
+  // VectorXd omega_r(3);
+  // omega_r << wx_r, wy_r, wz_r;
 
-  // AcroRate controller object
-  acrorate_class *controller;
-  controller = new acrorate_class(1.0/FREQ_ACRO_RATE);
 
   // Nonlinear vector field based controller for the drone object
   dronefield_class *dronefield;
   dronefield = new dronefield_class(1.0/FREQ_VEC_FIELD_CONTROL, m);
 
-  Eigen::VectorXd drone_states(N_STATES);
-  Eigen::VectorXd drone_controls(4);
+  //Eigen::VectorXd drone_states(N_STATES);
   Eigen::VectorXd acro_reference(4);
-  Eigen::VectorXd sensors(10);
-  Eigen::VectorXd omega_filt(3);
-  omega_filt << 0,0,0;
 
-  drone_states = Drone->get_states();
-  drone_controls = Drone->get_controls();
+  drone_states << 0.0,0.0,0.0, 0.0,0.0,0.0, 1.0,0.0,0.0,0.0, 0.0,0.0,0.0;
+  acro_reference << m*g, 0.0,0.0,0.0;
 
-  //Variables to print the percentage of the code's execution
-  double targ_percent = 0;
-  double step_percent = 1;
-
-  double T; //seconds
-  T = SIMULATION_TIME;
-  double t = 0;
-
-  //Counters to control the frequences
-  int count_acro_rate = 0;
-  int count_vetor_field = 0;
+  
+  geometry_msgs::Quaternion rateThrust_msg;
 
 
-  cout << "\33[34m\nSimulation loop started ...\33[0m" << endl;
-  cout << endl << endl;
-  for(int k=0; k<(T/time_step); k++){
+  VectorXd zero_vec(12);
+  zero_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  double t, t0;
+  t0 = ros::Time::now().toSec();
+
+ while (ros::ok()){
+
+    // Read the callbacks
+    ros::spinOnce();
+
+
+    dronefield->dronefield_control_step(drone_states.block(0,0,10,1));
+    acro_reference = dronefield->get_controls();
+
+    cout << "pos: " << drone_states.block(0,0,3,1).transpose() << endl;
+    cout << "vel: " << drone_states.block(3,0,3,1).transpose() << endl;
+    cout << "quat: " << drone_states.block(6,0,4,1).transpose() << endl;
+    cout << "D: " << dronefield->get_distance() << endl;
+    cout << "tau: " << acro_reference(0) << endl;
+    cout << "omega: " << acro_reference.block(1,0,3,1).transpose() << endl;
+    cout << endl;
+
+    rateThrust_msg.w = acro_reference(0);
+    rateThrust_msg.x = acro_reference(1);
+    rateThrust_msg.y = acro_reference(2);
+    rateThrust_msg.z = acro_reference(3);
     
 
-    t = k*time_step;
+    // Publish rateThrust command
+    cmd_pub.publish(rateThrust_msg);
 
-
-    if(t >= count_vetor_field*float(1.0/FREQ_VEC_FIELD_CONTROL)){
-        count_vetor_field++;
-        dronefield->dronefield_control_step(drone_states.block(0,0,10,1));
-        acro_reference = dronefield->get_controls();
-#ifdef PRINT_TASKS
-        cout << "\33[44mexec dronefield_control_step\33[0m"<< endl;
-#endif
-    }
     
+    t = ros::Time::now().toSec() - t0;
+    save_to_log(drone_states, zero_vec.block(0,0,4,1), acro_reference, zero_vec.block(0,0,10,1), t);
 
+    // Sleep program
+    loop_rate.sleep();
 
-    if(t >= count_acro_rate*float(1.0/FREQ_ACRO_RATE)){
-      count_acro_rate++;
-      tau_r = acro_reference(0);
-      omega_r = acro_reference.block(1,0,3,1);
-      controller->set_acrorate_reference(tau_r, omega_r);
-#ifdef USE_GT_ON_ACRORATE
-      controller->set_omega(drone_states.block(10,0,3,1));
-#elif defined(USE_GYRO_ON_ACRORATE)
-      controller->set_omega(sensors.block(0,0,3,1));
-#else
-      cout << "\33[91mAcro rate controller is not running !\33[0m" << endl;
-#endif    
-      controller->acrorate_control_step();
-      drone_controls = controller->get_controls();
-#ifdef PRINT_TASKS
-      cout << "\33[46mexec acrorate_control_step\33[0m"<< endl;
-#endif
-    }
-
-
-    Drone->set_controls(drone_controls);
-    Drone->itegration_step();
-    drone_states = Drone->get_states();
-#ifdef PRINT_TASKS
-    cout << "\33[97mexec itegration_step\33[0m"<< endl;
-#endif
-
-    Drone->update_sensors();
-    sensors = Drone->sensors->get_sensors();
-
-    save_to_log(drone_states, drone_controls, acro_reference, sensors, k*time_step);
-
-#ifdef PRINT_EXECUTION_PERCENTAGE
-    if((t/T)*100 > targ_percent){
-      cout << "\033[1A\r\33[92mExecution: " << targ_percent << "%\33[0m" << endl;
-      targ_percent += step_percent;
-    }
-#endif
 
   }
-
-  drone_states = Drone->get_states();
-  
-  cout << "\33[32mSimulation step success ...\33[0m" << endl;
-
 
   cout << "\33[34m\nClosing logs ...\33[0m" << endl;
   close_log_files();

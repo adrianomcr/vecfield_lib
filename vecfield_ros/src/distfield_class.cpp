@@ -10,7 +10,7 @@ using namespace Eigen;
 
 
 #define g 9.81
-#define m 0.4
+// #define m 0.4
 
 #define n_points 30
 
@@ -53,17 +53,16 @@ distfield_class::distfield_class(double time_step){
     VectorXd zero_vec(3);
     zero_vec << 0.0, 0.0, 0.0;
 
-    tau_r = m*g;
-    omega_r = zero_vec;
-
     int_omega = zero_vec;
     dif_omega = zero_vec;
     last_error_omega = zero_vec;
     F = zero_vec;
 
+    Dist = -1.0;
+
     //Parameters
     gain_Kf = 0.8; //conergence gain of the field
-    vr = 1.5; //reference velocity
+    vr = 5.0; //reference velocity
 
     dt = time_step;
 
@@ -76,10 +75,11 @@ Vector3d distfield_class::sample_curve(double s){
 
   Vector3d C;
 
-  // C << 3*cos(s)+5, 2*sin(s)+5, 1; //ellipse
-  C << 3*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*cos(s)+5, 2*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*sin(s)+5, 1; //square
+  C << 2*cos(s)+5, 2*sin(s)+5, 2; //ellipse
+  // C << 3*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*cos(s)+5, 2*pow(cos(s)*cos(s)*cos(s)*cos(s)+sin(s)*sin(s)*sin(s)*sin(s),-0.25)*sin(s)+5, 1; //square
   // C << 3*(1+cos(6*s)/6.0)*cos(s)+5, 2*(1+cos(6*s)/6.0)*sin(s)+5, 1; //amoeba 
   // C << 2*(sin(s)+2*sin(2*s)), 2*(cos(s)-2*cos(2*s)), 2*(-sin(3*s)+1) + 1; //knot
+  // C << 0.0, 2*cos(s), 2*sin(s) + 10; //vertical circle
   // C << 6*cos(s), 1.5*sin(2*s), 1; //8 - should not work properly for now
 
   return C;
@@ -190,6 +190,7 @@ VectorXd distfield_class::compute_field(VectorXd p){
     Vector3d Dv;
     Dv = p-r_star;
     D = Dv.norm();
+    Dist = D;
     // Compute the gradient of the distance function
     Vector3d grad_D;
     grad_D = Dv/(D+0.000001);
@@ -290,6 +291,11 @@ VectorXd distfield_class::get_field(){
     return controls_return;
 }
 
+double distfield_class::get_distance(){
+
+    return Dist;
+}
+
 
 // Destructor
 distfield_class::~distfield_class(){
@@ -314,16 +320,23 @@ distfield_class::~distfield_class(){
 
 
 // Constructor
-dronefield_class::dronefield_class(double time_step): distfield_class(time_step){
+dronefield_class::dronefield_class(double time_step, double m_): distfield_class(time_step){
 
     VectorXd zero_vec(3);
     zero_vec << 0.0, 0.0, 0.0;
 
-    omega = zero_vec;
-    tau = 0.4*9.81;
+    m = m_;
 
-    gain_Kv = 0.8;
-    gain_Kw = 2.0;
+    tau_r = m*g;
+    omega_r = zero_vec;
+
+    omega = zero_vec;
+    tau = m*9.81;
+
+    gain_Kv = 1.5;
+    gain_Kw = 3.0;
+
+    
 
 }
 
@@ -365,9 +378,12 @@ Vector3d dronefield_class::get_acc_ref(Vector3d p, Vector3d v){
 
 
 
-
+#define PSI_TYPE 1
 
 void dronefield_class::dronefield_control_step(VectorXd states){
+
+
+
 
   Vector3d pos;
   Vector3d vel;
@@ -393,13 +409,24 @@ void dronefield_class::dronefield_control_step(VectorXd states){
   Vector3d a_r, a_r_M, a_r_m;
   a_r = get_acc_ref(pos,vel);
   Matrix3d Rr, Rr_M, Rr_m;
+#ifdef PSI_TYPE
+  Vector3d f;
+  f = compute_field(pos);
+  psi_r = atan2(f(1),f(0));
+#endif
   Rr =  get_orientation_ref(a_r, psi_r);
 
   // Control signal for thrust
   tau = m*a_r.dot(z_b);
-  if (tau_r < 0.1){
-    tau_r = 0.1;
+  if (tau < 0.1){
+    tau = 0.1;
   }
+
+  //Debug
+  // Vector3d F;
+  // F = compute_field(pos);
+  // cout << "\33[91mF:  " << F.transpose() << "\33[0m" << endl;
+  // cout << "\33[92mar: " << a_r.transpose() << "\33[0m" << endl;
   
   // Computation of the derivative of the matrix Rr
   double delta_t = 0.01;
@@ -407,11 +434,19 @@ void dronefield_class::dronefield_control_step(VectorXd states){
   pos_M = pos + vel*delta_t;
   vel_M = vel + (z_b*tau_r/m -g*z_hat)*delta_t;    //add drag """""""""""
   a_r_M = get_acc_ref(pos_M,vel_M);
+#ifdef PSI_TYPE
+  f = compute_field(pos_M);
+  psi_r_M = atan2(f(1),f(0));
+#endif
   Rr_M =  get_orientation_ref(a_r_M, psi_r_M);
 
   pos_m = pos - vel*delta_t;
   vel_m = vel - (z_b*tau_r/m -g*z_hat)*delta_t;    //add drag """""""""""
   a_r_m = get_acc_ref(pos_m,vel_m);
+#ifdef PSI_TYPE
+  f = compute_field(pos_m);
+  psi_r_m = atan2(f(1),f(0));
+#endif
   Rr_m =  get_orientation_ref(a_r_m, psi_r_m);
 
   Matrix3d Re, Rr_dot, S_w;

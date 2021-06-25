@@ -16,9 +16,7 @@ class distfield_class{
   protected:
 
 
-    //Reference
-    double tau_r;
-    VectorXd omega_r;
+
 
     //Controller related
     VectorXd int_omega;
@@ -34,6 +32,7 @@ class distfield_class{
     double gain_Kf;
     double vr;
 
+    double Dist;
 
     
 
@@ -55,8 +54,11 @@ class distfield_class{
 
     double aurea(double, double, VectorXd);
 
-    // Get drone current controls (velocities of the propellers)
+    // Get drone current vector field
     VectorXd get_field();
+
+    // Get the last computed distance to the curve
+    double get_distance();
 
     //Useful functions
 
@@ -90,11 +92,18 @@ class dronefield_class : public distfield_class{
     double tau;
     Vector3d omega;
 
+    //Drone's mass
+    double m;
+
+    //Reference
+    double tau_r;
+    VectorXd omega_r;
+
     
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    dronefield_class(double); //Construtor
+    dronefield_class(double, double); //Construtor
     ~dronefield_class(); //Destructor
 
     // Method to perform a controller loop

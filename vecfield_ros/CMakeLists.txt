@@ -158,6 +158,12 @@ add_executable(control_turtle src/control_turtle.cpp
   src/distfield_class.cpp)
 target_link_libraries(control_turtle ${catkin_LIBRARIES})
 
+
+add_executable(control_drone src/control_drone.cpp
+  include/vecfield_ros/distfield_class.h
+  src/distfield_class.cpp)
+target_link_libraries(control_drone ${catkin_LIBRARIES})
+
 # add_executable(drone_sim src/drone_sim.cpp
 #         src/drone_class.cpp
 #         src/read_parameters.cpp
