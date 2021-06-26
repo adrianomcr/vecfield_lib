@@ -378,7 +378,7 @@ Vector3d dronefield_class::get_acc_ref(Vector3d p, Vector3d v){
 
 
 
-#define PSI_TYPE 1
+#define PSI_FIX 1
 
 void dronefield_class::dronefield_control_step(VectorXd states){
 
@@ -409,7 +409,7 @@ void dronefield_class::dronefield_control_step(VectorXd states){
   Vector3d a_r, a_r_M, a_r_m;
   a_r = get_acc_ref(pos,vel);
   Matrix3d Rr, Rr_M, Rr_m;
-#ifdef PSI_TYPE
+#ifdef PSI_FIX
   Vector3d f;
   f = compute_field(pos);
   psi_r = atan2(f(1),f(0));
@@ -434,7 +434,7 @@ void dronefield_class::dronefield_control_step(VectorXd states){
   pos_M = pos + vel*delta_t;
   vel_M = vel + (z_b*tau_r/m -g*z_hat)*delta_t;    //add drag """""""""""
   a_r_M = get_acc_ref(pos_M,vel_M);
-#ifdef PSI_TYPE
+#ifdef PSI_FIX
   f = compute_field(pos_M);
   psi_r_M = atan2(f(1),f(0));
 #endif
@@ -443,7 +443,7 @@ void dronefield_class::dronefield_control_step(VectorXd states){
   pos_m = pos - vel*delta_t;
   vel_m = vel - (z_b*tau_r/m -g*z_hat)*delta_t;    //add drag """""""""""
   a_r_m = get_acc_ref(pos_m,vel_m);
-#ifdef PSI_TYPE
+#ifdef PSI_FIX
   f = compute_field(pos_m);
   psi_r_m = atan2(f(1),f(0));
 #endif
