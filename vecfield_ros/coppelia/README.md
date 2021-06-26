@@ -11,9 +11,10 @@ $ echo 'export COPPELIASIM_ROOT_DIR="$HOME/CoppeliaSim_Edu_V4_1_0_Ubuntu16_04"' 
 $ echo 'alias coppelia="$COPPELIASIM_ROOT_DIR/coppeliaSim.sh"' >> ~/.bashrc && source ~/.bashrc
 ```
 
-Test if the installation, type `coppeliasim` on a terminal.
+Test if the installation, type `coppelia` on a terminal.
 
 Get the package for ROS communication:
+
 ```bash
 $ cd ~/catkin_ws/src/
 $ git clone https://github.com/CoppeliaRobotics/simExtROSInterface --branch coppeliasim-v4.0.0
