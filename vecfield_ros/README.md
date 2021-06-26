@@ -33,7 +33,7 @@ $ rosrun turtlesim turtlesim_node
 $ rosrun vecfield_ros control_turtle
 ```
 
-### Drone simulation
+### Drone simulation - sdandalone
 
 This package has a simple model for a quadcopter (see the code `drone_class.cpp`). The inputs are the velocities of each of the propellers. There is also a AcroRate controller (see the code `dacrorate_class.cpp`) that allows the drone to be controlled in the AcroRate mode, thus, respond to total thrust and angular rate commands.
 
@@ -47,3 +47,21 @@ The program will write the results in the `/tmp` folder. On matlab, run the scri
 
 
 Currently, the drone simulator does not depend on any specific ROS tool, just the compiler. The code can be easily adapted to control drones in other simulators that communicate with ROS.
+
+
+### Drone simulation - Coppeliasim
+
+This simulation considers the CoppeliaSim simulator integrated with ROS. You can get the simulator at <https://www.coppeliarobotics.com/coppeliaSim> and setup the ROS communication following the instructions in <https://www.coppeliarobotics.com/helpFiles/en/ros1Tutorial.htm>. However, I recommend the instructions [here](coppelia/README.md)
+
+With the ROS core running, open the coppelia scene `coppelia/drone_scene.ttt` and play the simulator. If your setup is ok, you should see the topics `/drone/gt` and `/drone/input/rateThrust` if you type `rostopic list`.
+
+Now, run the controller on a terminal:
+
+```bash
+$ rosrun vecfield_ros control_drone
+```
+
+
+
+
+
