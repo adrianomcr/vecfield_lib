@@ -51,7 +51,7 @@ Currently, the drone simulator does not depend on any specific ROS tool, just th
 
 ### Drone simulation - Coppeliasim
 
-This simulation considers the CoppeliaSim simulator integrated with ROS. You can get the simulator at <https://www.coppeliarobotics.com/coppeliaSim> and setup the ROS communication following the instructions in <https://www.coppeliarobotics.com/helpFiles/en/ros1Tutorial.htm>. However, I recommend the instructions [here](coppelia/README.md)
+This simulation considers the CoppeliaSim simulator integrated with ROS. You can get the simulator at <https://www.coppeliarobotics.com/coppeliaSim> and setup the ROS communication following the instructions in <https://www.coppeliarobotics.com/helpFiles/en/ros1Tutorial.htm>. However, I recommend the instructions [here](coppelia/README.md).
 
 With the ROS core running, open the coppelia scene `coppelia/drone_scene.ttt` and play the simulator. If your setup is ok, you should see the topics `/drone/gt` and `/drone/input/rateThrust` if you type `rostopic list`.
 
